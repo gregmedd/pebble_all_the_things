@@ -1,0 +1,34 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "Greg M.",
+    "longName": "Marriage Equality all the Things!",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/TinyPrideUS.png",
+                "name": "US_MAP",
+                "type": "png"
+            },
+            {
+                "file": "images/TinyPrideHeart.png",
+                "name": "BT_HEART",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Marriage Equality",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "0c65c2e9-79d5-4310-8cd9-0dce8766b888",
+    "versionLabel": "1.1",
+    "watchapp": {
+        "watchface": true
+    }
+}
