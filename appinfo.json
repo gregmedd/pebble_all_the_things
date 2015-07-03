@@ -1,9 +1,9 @@
 {
     "appKeys": {},
     "capabilities": [
-        ""
+        "configurable"
     ],
-    "companyName": "Greg M.",
+    "companyName": "Greg Medding",
     "longName": "Marriage Equality all the Things!",
     "projectType": "native",
     "resources": {
