@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "countries.h"
 
 static Window *watch_window;
 static TextLayer *time_layer;
@@ -13,10 +14,8 @@ static GBitmap *heart_img;
 
 static char time_buffer[6];
 
-static bool time_inited = false;
-
 void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
-  if (units_changed & (MINUTE_UNIT | HOUR_UNIT) || !time_inited) {
+  if (units_changed & (MINUTE_UNIT | HOUR_UNIT)) {
     if (clock_is_24h_style()) {
       strftime(time_buffer, sizeof(time_buffer), "%H:%M", tick_time);
     } else {
@@ -26,7 +25,7 @@ void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     text_layer_set_text(time_layer, time_buffer);
   }
   
-  if (units_changed & SECOND_UNIT || !time_inited) {
+  if (units_changed & SECOND_UNIT) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Make the heart beat");
     layer_set_hidden((Layer *)heart_layer,
                      ((tick_time->tm_sec % 2) == 1) || !bluetooth_connection_service_peek());
@@ -36,22 +35,15 @@ void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
                                ? GColorWhite : GColorBlack);
     #endif
   }
-  
-  time_inited = true;
 }
 
 void watch_window_load(Window *window) {
-  // Load the fonts we need
-  //font_clk = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LED_DOTS_42));
-  //font_cal = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LED_DOTS_16));
-
   // Set up the text layer for the digital time
   time_layer = text_layer_create(GRect(0, 10, 144, 48));
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
   text_layer_set_font(time_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
   text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
-  //text_layer_set_text(time_layer, "24:31");
   
   // Set up the equal sign layer for the B&W version
   #ifdef PBL_BW
@@ -64,8 +56,8 @@ void watch_window_load(Window *window) {
   #endif
 
   // Set up layer for the map graphic
-  map_layer = bitmap_layer_create(GRect(0, 68, 144, 90));
-  map_img = gbitmap_create_with_resource(RESOURCE_ID_US_MAP);
+  map_layer = bitmap_layer_create(GET_COUNTRY_GRECT(DefaultCountry));
+  map_img = gbitmap_create_with_resource(CountryMaps[DefaultCountry]);
   bitmap_layer_set_compositing_mode(map_layer, GCompOpSet);
   bitmap_layer_set_bitmap(map_layer, map_img);
   
@@ -84,6 +76,10 @@ void watch_window_load(Window *window) {
   #endif
   window_set_background_color(window, GColorBlack);
   
+  // Should probably do something here to make the time get set instead of waiting
+  time_t init_time = time(NULL);
+  tick_handler(localtime(&init_time), SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT);
+  
   // Finally, register for timer updates
   tick_timer_service_subscribe(SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT, tick_handler);
 }
@@ -98,13 +94,11 @@ void watch_window_unload(Window *window) {
   #ifdef PBL_BW
     text_layer_destroy(equal_layer);
   #endif
-  time_inited = false;
 }
 
 void handle_init(void) {
   // Set up the main watch window
   watch_window = window_create();
-  //window_set_fullscreen(watch_window, true);
   window_set_background_color(watch_window, GColorBlack);
   window_set_window_handlers(watch_window, (WindowHandlers) {
     .load = watch_window_load,
